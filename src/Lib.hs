@@ -11,37 +11,35 @@ import Criterion.Measurement
 nameFile :: FilePath
 nameFile = "out/test.txt"
 
--- количество повторений
-numberOfRepetitions :: Integer
-numberOfRepetitions = 10000
-
 someFunc :: IO ()
 someFunc = do
-  -- t1 <- getCurrentTime
-  res <- mulNaive 3 4
-  -- t2 <- getCurrentTime
-  -- print $ t1
+  initializeTime
+  t1 <- getTime
+  let res = myMul 3 4
+  t2 <- getTime
+  print 0
   -- print $ t2
   -- writeFile nameFile $ show $ diffUTCTime t2 t1
-  print res
+  -- print res
   -- writeFile nameFile $ "lol\n"
   -- appendFile nameFile $ "kek"
 
--- funckaratsubaMul :: IO NominalDiffTime
-funckaratsubaMul = do
-  initializeTime
-  -- fmap (\x -> (x / fromInteger numberOfRepetitions)) $
-  fmap sum $ sequence $ map func [1..numberOfRepetitions]
-  -- return (a / numberOfRepetitions)
-  where
-    func _ = do
-        start <- getCPUTime
-        res <- mulNaive 4214124 40000
-        stop  <- getCPUTime
-        -- test <- getCPUTime
-        -- print test
-        -- print $ stop - start
-        return $ stop - start
+-- funckaratsubaMul :: IO ()
+-- funckaratsubaMul = do
+--   -- initializeTime
+--   -- fmap (\x -> (x / fromInteger numberOfRepetitions)) $
+--   fmap sum $ sequence $ map func [1..numberOfRepetitions]
+--   -- return (a / numberOfRepetitions)
+--   where
+--     func _ = do
+--         -- start <- getCPUTime
+--         res <- myMul 4214124 40000
+--         -- stop  <- getCPUTime
+--         -- test <- getCPUTime
+--         -- print test
+--         -- print $ stop - start
+--         -- return $ stop - start
+--         return res
 
 
 -- getTime =
@@ -54,6 +52,10 @@ funckaratsubaMul = do
 
 -- random_vector :: Int -> Vector
 
+-- naiveMul :: Vector Int -> Vector Int -> Vector Int
 
-mulNaive :: Int -> Int -> IO Int
-mulNaive a b = return (a * b)
+
+
+
+myMul :: Int -> Int -> Int
+myMul a b = a * b

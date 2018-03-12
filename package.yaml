@@ -21,8 +21,11 @@ description:         Please see the README on Github at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
-- time
+- criterion
 - vector
+- deepseq
+# - time
+# - vector
 
 library:
   source-dirs: src
@@ -35,6 +38,7 @@ executables:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
+    - -XStrict
     dependencies:
     - GraduateWork
 
