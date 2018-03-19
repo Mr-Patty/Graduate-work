@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4105b67c202d96cdefe4a3fdb48ed066289a944901ef8769d79338a8eaba3744
+-- hash: 0b4bdf6ab601b3ff7ce1e516c1dda6b4f9ca199260c02ea67e04256390193145
 
 name:           GraduateWork
 version:        0.1.0.0
@@ -35,6 +35,7 @@ library
     , random
     , vector
   exposed-modules:
+      AltMul
       Lib
       Mul_Lib
   other-modules:
