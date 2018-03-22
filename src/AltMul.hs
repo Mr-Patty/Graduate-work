@@ -1,8 +1,8 @@
 module AltMul where
 
-import qualified Data.Vector as Vec
+import Prelude
 import System.Random
-import qualified Data.List as List
+import Data.List
 
 
 -- Двоичное число
@@ -13,33 +13,74 @@ type BinaryList = [Binary]
 -- type Vector = [Binary]
 
 
+-- lenght of the long number for which naive multiplication
+-- will be called in the Karatsuba function
+lenfNaive :: Int
+lenfNaive = 1
+
+nullMul :: BinaryList -> BinaryList -> BinaryList
+nullMul _ _ = []
+
+fftMul :: BinaryList -> BinaryList -> BinaryList
+fftMul a b = a `add` b
+
 -- Умножение Карацубы
--- karatsubaMul :: Vector -> Vector -> Vector
--- karatsuba_mu
+karatsubaMul :: BinaryList -> BinaryList -> BinaryList
+karatsubaMul [a] [b] = [a * b, 0]
+karatsubaMul x y =
+  let
+    len = (length x)
+    k = len `div` 2
+    xl = take k x
+    xr = drop k x
+    yl = take k y
+    yr = drop k y
+    prod1 = karatsubaMul xl yl
+    prod2 = karatsubaMul xr yr
+    prod3 = karatsubaMul (xr `add` xl) (yl `add` yr)
+    middle = minus  prod3 prod1 prod2
+    restmp = prod1 ++ prod2
+  in
+    if len <= lenfNaive then
+      naiveMul x y
+    else
+      (take k restmp) ++ (drop k restmp `add` middle) ++ (drop (len + k) restmp)
+      -- offset restmp middle k (k + (length middle))
 
--- Из двоичного представление в десятичное
--- vectorToInt :: Vector -> Int
 
--- Расширение вектора
--- extendVec :: Vector -> Int -> Vector
--- extendVec a _ = a
+offset :: BinaryList -> BinaryList -> Int -> Int -> BinaryList
+offset [] [] _ _ = []
+offset [] y _ _ = y
+offset x [] _ _ = x
+offset x y 0 0 = x
+offset (x:xs) (y:ys) 0 k = (x + y) : offset xs ys 0 (k - 1)
+offset (x:xs) y n k = x : offset xs y (n - 1) k
+
+minus :: BinaryList -> BinaryList -> BinaryList -> BinaryList
+minus [] _ _ = []
+minus (a:as) (b:bs) (c:cs) = (a - b - c) : minus as bs cs
+-- minus a b = zipWith (-) a b
+
+add :: BinaryList -> BinaryList -> BinaryList
+add a b = zipWith (+) a b
 
 naiveMul :: BinaryList -> BinaryList -> BinaryList
 naiveMul vecA vecB =
   let
-    lenA = List.length vecA
-    lenB = List.length vecB
+    lenA = length vecA
+    lenB = length vecB
     lenMax = max (length vecA) (length vecB)
-    resVec = List.replicate (2 * lenMax) 0
+    resVec = replicate (2 * lenMax) 0
     listVec = mulVec vecA vecB 0
   in
-    finalizeVec $ List.foldl' foldFunc resVec listVec
+    foldl' add resVec listVec
+    -- finalizeVec $ foldl' foldFunc resVec listVec
 
 foldFunc :: BinaryList -> BinaryList -> BinaryList
 foldFunc a b =
   let
-    lenA = List.length a
-    lenB = List.length b
+    lenA = length a
+    lenB = length b
   in
     if lenB > lenA then
       sumVec b a
@@ -51,10 +92,10 @@ sumVec vecA vecB =
   case null vecB of
     False ->
       let
-        a = List.head vecA
-        b = List.head vecB
-        vecAtail = List.tail vecA
-        vecBtail = List.tail vecB
+        a = head vecA
+        b = head vecB
+        vecAtail = tail vecA
+        vecBtail = tail vecB
       in
         (a + b) : (sumVec vecAtail vecBtail)
     _ -> vecA
@@ -65,41 +106,38 @@ mulVec vecA vecB n =
   case null vecA of
     False ->
       let
-        a = List.head vecA
-        vecAEnd = List.tail vecA
-        resNul = List.replicate n 0
+        a = head vecA
+        vecAEnd = tail vecA
+        resNul = replicate n 0
       in
-        (resNul List.++ (fmap (\x -> x * a) vecB)) : mulVec vecAEnd vecB (n + 1)
+        (resNul ++ (fmap (\x -> x * a) vecB)) : mulVec vecAEnd vecB (n + 1)
     _ -> []
 
 mulVecNum :: BinaryList -> Binary -> BinaryList
 mulVecNum vec a =
   fmap (\x -> x * a) vec
 
---
--- func2
---
--- func :: acc -> BinaryList -> a -> BinaryList
 
 -- Генерация рандомного вектора
 randomVector :: Int -> IO BinaryList
 randomVector n = do
   randGen <- newStdGen
-  return $ List.take n $ randomRs (0 :: Binary,1) randGen
+  return $ take n $ randomRs (0 :: Binary,1) randGen
 
 
 -- Расширение вектора
-extendVec :: BinaryList -> Int -> BinaryList
+extendVec :: BinaryList -> Float -> BinaryList
 extendVec vec n =
-  if n > len then
-    vec List.++ (List.replicate (n - len) 0)
+  if m > len then
+    vec ++ (replicate (m - len) 0)
   else
     vec
   where
-    len = List.length vec
+    m = round $ 2 ** (fromIntegral $ ceiling $ (logBase 2 n))
+    len = length vec
 
 intToVec :: Int -> BinaryList
-intToVec 0 = [0]
+intToVec 0 = []
 intToVec n =
   let
     d = n `div` 2
@@ -116,8 +154,8 @@ vecToIntAcc vec n =
   case null vec of
     False ->
       let
-        a = List.head vec
-        vecR = List.tail vec
+        a = head vec
+        vecR = tail vec
       in
         a * (2^(n)) + (vecToIntAcc vecR $ n + 1)
     True -> 0
@@ -128,12 +166,8 @@ finalizeVec :: BinaryList -> BinaryList
 finalizeVec vec = finalizeVecAcc vec 0
 
 finalizeVecAcc :: BinaryList -> Binary -> BinaryList
-finalizeVecAcc vec acc =
-  case List.null vec of
-    True -> [acc]
-    False ->
-      let
-        a = (List.head vec) + acc
-        newVec = List.tail vec
-      in
-        (a `mod` 2) : (finalizeVecAcc newVec (a `div` 2))
+finalizeVecAcc [] acc = [acc]
+finalizeVecAcc (x:newVec) acc =
+  (a `mod` 2) : (finalizeVecAcc newVec (a `div` 2))
+  where
+    a = (x + acc)
