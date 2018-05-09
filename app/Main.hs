@@ -46,7 +46,7 @@ mainIOAlt rep func filePath start stop = do
     res <- averageTimeAlt func rep x
     print (x, res)
     hPutStrLn handle $ outputFormat x res) [start,(start + 100)..stop]
-    hClose handle
+  hClose handle
 
 startFunctionAlt :: FunctionAlt -> Int -> IO Double
 startFunctionAlt f1 k = do
